@@ -15,8 +15,8 @@ serum_creatinine <- heart %>%
          serum_creatinine < quantile(serum_creatinine, 0.72) + 1.5 * serum_creatinine_iqr) %>%
   select(serum_creatinine, DEATH_EVENT)
 
-serum_creatinine_death <- filter(serum_creatinine, DEATH_EVENT == 1)
-serum_creatinine_alive <- filter(serum_creatinine, DEATH_EVENT == 0)
+serum_creatinine_death <- filter(serum_creatinine, DEATH_EVENT == 'deceased')
+serum_creatinine_alive <- filter(serum_creatinine, DEATH_EVENT == 'alive')
 
 # Lets view data set distribution in a histogram
 ggplot(serum_creatinine_alive, aes(x=serum_creatinine, y=after_stat(density))) +
@@ -48,6 +48,39 @@ t.test(serum_creatinine_death$serum_creatinine,
        serum_creatinine_alive$serum_creatinine,
        alternative = 'greater')
 
-#According to the results, we value 2.048e-07, which is significant at
+#According to the results, we have p value of 2.048e-07, which is significant at
 #5% significant level; thus, we reject the null hypothesis in support of the
 #alternative hypothesis
+
+
+# test of variance using F distribution
+var.test(serum_creatinine_death$serum_creatinine,
+         serum_creatinine_alive$serum_creatinine,
+         alternative = 'two.sided')
+
+
+#proportions
+#anaemia and high blood pressure
+anaemia_table <- heart %>%
+  group_by(DEATH_EVENT, anaemia) %>%
+  summarize(Freq=n()) %>%
+  mutate(per = Freq/sum(Freq))
+anaemia_table
+
+blood_pressure <- heart %>%
+  group_by(DEATH_EVENT, high_blood_pressure) %>%
+  summarize(Freq=n()) %>%
+  mutate(per = Freq/sum(Freq))
+
+ggplot(anaemia_table, aes(x=DEATH_EVENT, y=per, fill=anaemia)) +
+  geom_col(position = 'dodge')
+
+ggplot(blood_pressure, aes(x=DEATH_EVENT, y=per, fill=high_blood_pressure)) +
+  geom_col(position = 'dodge')
+
+  
+
+
+
+ 
+
